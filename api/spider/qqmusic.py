@@ -1,7 +1,13 @@
 import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
+from sqlalchemy.exc import NoResultFound
+
 from config import HttpParams
+from dependent import mysql
+from models.qqmusic import QQMusic
+
+session = mysql.connectSql()
 
 
 def requestsList():
@@ -36,6 +42,7 @@ def requestsList():
     UKRankings()
     JapanPublicTrustList()
     YouTubeMusicRankings()
+    mysql.closeSql(session)
 
 
 # 飙升榜
@@ -201,16 +208,37 @@ def toplist(base_url, name):
     div_elements = resposne_soup.select("div.songlist__item.songlist__item--even, div.songlist__item")  # 寻找对应的html标签
     date = resposne_soup.find(name='span', class_="toplist_switch__data").text  # 获取日期
     flag = -1
-    for i in date:      # 判断日期格式是否为 11.01-11.07之类的情况
+    for i in date:  # 判断日期格式是否为 11.01-11.07之类的情况
         if "-" == i:
             flag += 1
     if flag == 0:
-        date = "第" + str(datetime.strptime(date.split('-')[0], "%m.%d").isocalendar().week) + "周"   # 统一日期格式为 第x周
-    for item in div_elements:   # 构造数据
+        date = "第" + str(datetime.strptime(date.split('-')[0], "%m.%d").isocalendar().week) + "周"  # 统一日期格式为 第x周
+    for item in div_elements:  # 构造数据
         div_soup = BeautifulSoup(str(item), "html.parser")  # 载入bs4
-        data = {'rank': div_soup.select("div.songlist__number songlist__number--top, div.songlist__number ")[0].text,   # 获取排名
-                'song': div_soup.select_one("span.songlist__songname_txt a:nth-of-type(2)").get('title'),   # 获取歌名
-                'singer': div_soup.find(name="a", class_="playlist__author").get('title'),  # 获取歌手名
-                'duration': div_soup.find(name="div", class_="songlist__time").text,    # 获取歌曲时长
-                'list_name': name,  # 获取榜单名称
-                "date": date}   # 日期
+        data = QQMusic()
+        data.rank = div_soup.select("div.songlist__number songlist__number--top, div.songlist__number ")[0].text  # 获取排名
+        data.song = div_soup.select_one("span.songlist__songname_txt a:nth-of-type(2)").get('title')  # 获取歌名
+        data.singer = div_soup.find(name="a", class_="playlist__author").get('title')  # 获取歌手名
+        data.duration = div_soup.find(name="div", class_="songlist__time").text  # 获取歌曲时长
+        data.list_name = name  # 获取榜单名称
+        data.date = date  # 日期
+        data.create_at = datetime.now()
+        print(data.song)
+        # 检查该条目是否已存在于数据库中
+        try:
+            existing_data = session.query(QQMusic).filter_by(
+                rank=data.rank,
+                song=data.song,
+                singer=data.singer,
+                duration=data.duration,
+                list_name=data.list_name,
+                date=data.date
+            ).one()
+            # 条目已存在，您可以更新它或跳过添加新条目
+            # 例如，您可以更新“create_at”字段并提交更改
+            existing_data.create_at = datetime.now()
+            session.commit()
+        except NoResultFound:
+            # 条目不存在，请将其添加到数据库
+            session.add(data)
+            session.commit()
