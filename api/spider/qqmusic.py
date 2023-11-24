@@ -1,3 +1,6 @@
+import random
+import time
+
 import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -201,12 +204,15 @@ def YouTubeMusicRankings():
 
 
 def toplist(base_url, name):
-    # base_url = "https://y.qq.com/n/ryqq/toplist/26"
+    # 随机延迟1-10s
+    time.sleep(random.randint(1, 10))
     response = requests.get(url=base_url, headers=HttpParams.browser_ua_header)  # 发起http_get请求
     if response.status_code == 200:  # 返回http状态码为200的情况下
-        resposne_soup = BeautifulSoup(response.text, "html.parser")  # 载入bs4
-    div_elements = resposne_soup.select("div.songlist__item.songlist__item--even, div.songlist__item")  # 寻找对应的html标签
-    date = resposne_soup.find(name='span', class_="toplist_switch__data").text  # 获取日期
+        response_soup = BeautifulSoup(response.text, "html.parser")  # 载入bs4
+    else:
+        return None
+    div_elements = response_soup.select("div.songlist__item.songlist__item--even, div.songlist__item")  # 寻找对应的html标签
+    date = response_soup.find(name='span', class_="toplist_switch__data").text  # 获取日期
     flag = -1
     for i in date:  # 判断日期格式是否为 11.01-11.07之类的情况
         if "-" == i:
@@ -218,12 +224,30 @@ def toplist(base_url, name):
         data = QQMusic()
         data.rank = div_soup.select("div.songlist__number songlist__number--top, div.songlist__number ")[0].text  # 获取排名
         data.song = div_soup.select_one("span.songlist__songname_txt a:nth-of-type(2)").get('title')  # 获取歌名
-        data.singer = div_soup.find(name="a", class_="playlist__author").get('title')  # 获取歌手名
-        data.duration = div_soup.find(name="div", class_="songlist__time").text  # 获取歌曲时长
+        # 获取歌手名
+        # 查找<div class="songlist__artist">元素
+        artist_div = div_soup.find('div', {'class': 'songlist__artist'})
+        # 找到<div>内的所有<a>标签
+        artist_links = artist_div.find_all('a', {'class': 'playlist__author'})
+        # 提取每个<a>标签的文本内容
+        data.singer = [link.get_text(strip=True) for link in artist_links]
+        # 获取歌曲时长
+        data.duration = convertTime(div_soup.find(name="div", class_="songlist__time").text)
+        # 查找包含特定文本的<a>标签
+        song_links = div_soup.find('span', {'class': 'songlist__songname_txt'}).find_all('a')
+        # 提取第二个<a>标签的href属性值
+        if len(song_links) >= 2:
+            data.url = "https://y.qq.com" + song_links[1]['href']
         data.list_name = name  # 获取榜单名称
         data.date = date  # 日期
         data.create_at = datetime.now()
-        print(data.song)
+            # print(data.rank)
+            # print(data.song)
+            # print(data.singer)
+            # print(data.duration)
+            # print(data.url)
+            # print(data.list_name)
+            # print(data.date)
         # 检查该条目是否已存在于数据库中
         try:
             existing_data = session.query(QQMusic).filter_by(
@@ -232,6 +256,7 @@ def toplist(base_url, name):
                 singer=data.singer,
                 duration=data.duration,
                 list_name=data.list_name,
+                url=data.url,
                 date=data.date
             ).one()
             # 条目已存在，您可以更新它或跳过添加新条目
@@ -242,3 +267,13 @@ def toplist(base_url, name):
             # 条目不存在，请将其添加到数据库
             session.add(data)
             session.commit()
+
+
+def convertTime(time_str):
+    # 分割时间字符串，得到小时和分钟
+    hours, minutes = map(int, time_str.split(':'))
+    # 计算总分钟数
+    total_minutes = hours * 60 + minutes
+    # 将总分钟数转换为毫秒
+    total_milliseconds = total_minutes * 60 * 1000
+    return total_milliseconds
