@@ -1,7 +1,7 @@
 # Data Analysic and Visualization Design
-Data Analysic and Visualization Design (bilibili &amp;&amp; qqmusic &amp;&amp; 163music)
+
 ## Framework
-> use FastAPI
+- FastAPI
 
 ## Spider worksite 
 1. Bilibili
