@@ -6,7 +6,7 @@ Base = declarative_base()
 
 
 class NetEaseMusic(Base):
-    __tablename__ = 'neteasemusic'
+    __tablename__ = 'netease_music'
 
     id = Column(Integer, primary_key=True)
     rank = Column(Integer)
