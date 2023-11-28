@@ -206,6 +206,7 @@ def YouTubeMusicRankings():
 def toplist(base_url, name):
     # 随机延迟1-10s
     time.sleep(random.randint(1, 10))
+    print(f"sprider: {name}")
     response = requests.get(url=base_url, headers=HttpParams.browser_ua_header)  # 发起http_get请求
     if response.status_code == 200:  # 返回http状态码为200的情况下
         response_soup = BeautifulSoup(response.text, "html.parser")  # 载入bs4
@@ -241,28 +242,25 @@ def toplist(base_url, name):
         data.list_name = name  # 获取榜单名称
         data.date = date  # 日期
         data.create_at = datetime.now()
-            # print(data.rank)
-            # print(data.song)
-            # print(data.singer)
-            # print(data.duration)
-            # print(data.url)
-            # print(data.list_name)
-            # print(data.date)
         # 检查该条目是否已存在于数据库中
         try:
-            existing_data = session.query(QQMusic).filter_by(
-                rank=data.rank,
-                song=data.song,
-                singer=data.singer,
-                duration=data.duration,
-                list_name=data.list_name,
-                url=data.url,
-                date=data.date
-            ).one()
-            # 条目已存在，您可以更新它或跳过添加新条目
+            existing_data = session.query(QQMusic).filter(
+                QQMusic.rank == data.rank,
+                QQMusic.song == data.song,
+                QQMusic.url == data.url,
+                QQMusic.list_name == data.list_name,
+                QQMusic.date == data.date
+            ).first()
+
+            # 条目不存在，添加新条目
+            if existing_data is None:
+                session.add(data)
+                session.commit()
+
+            # 条目已存在，丢弃更改
             # 例如，您可以更新“create_at”字段并提交更改
-            existing_data.create_at = datetime.now()
-            session.commit()
+            # existing_data.create_at = datetime.now()
+            # session.commit()
         except NoResultFound:
             # 条目不存在，请将其添加到数据库
             session.add(data)
