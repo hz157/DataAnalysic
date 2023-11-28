@@ -6,7 +6,7 @@ Base = declarative_base()
 
 
 class QQMusic(Base):
-    __tablename__ = 'qqmusic'
+    __tablename__ = 'qq_music'
 
     id = Column(Integer, primary_key=True)
     rank = Column(Integer)
