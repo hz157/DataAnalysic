@@ -109,7 +109,7 @@ def getComHot():
         response = requests.get(url=url, headers=HttpParams.browser_ua_header)
         json_data = json.loads(response.text)
         total_items = len(json_data['data']['list'])
-        for item in tqdm(json_data['data']['list'], desc="Bilibili Comprehensive Popular Processing", unit="item", total=total_items):
+        for item in tqdm(json_data['data']['list'], desc=f"Bilibili Comprehensive Popular(number: {page}) Processing", unit="item", total=total_items):
             analysic_json_data(item, "综合热门")
         time.sleep(random.randint(1, 10))   # 随机延时
 
@@ -138,7 +138,7 @@ def getWeekHot():
             return
         else:
             total_items = len(json_data['data']['list'])
-            for item in tqdm(json_data['data']['list'], desc="Bilibili Weekly Popular Processing", unit="item", total=total_items):
+            for item in tqdm(json_data['data']['list'], desc=f"Bilibili Weekly Popular(Number: {page}) Processing", unit="item", total=total_items):
                 analysic_json_data(item, "入站必刷")
             page += 1
         time.sleep(random.randint(1, 10))  # 随机延时
