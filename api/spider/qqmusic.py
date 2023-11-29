@@ -14,7 +14,7 @@ from models.qqmusic import QQMusic
 session = mysql.connectSql()
 
 
-def requestsList():
+def runQQMusicSpider():
     SoaringList()
     HotSongChart()
     NewSongChart()
@@ -207,7 +207,7 @@ def YouTubeMusicRankings():
 def toplist(base_url, name):
     # 随机延迟1-10s
     time.sleep(random.randint(1, 10))
-    print(f"sprider: {name}")
+    # print(f"sprider: {name}")
     response = requests.get(url=base_url, headers=HttpParams.browser_ua_header)  # 发起http_get请求
     if response.status_code == 200:  # 返回http状态码为200的情况下
         response_soup = BeautifulSoup(response.text, "html.parser")  # 载入bs4

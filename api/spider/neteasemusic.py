@@ -16,23 +16,11 @@ from models.neteasemusic import NetEaseMusic
 
 system_platform = platform.system()
 
-# # 指定浏览器驱动的路径，例如ChromeDriver的路径
-# if system_platform == "Linux":
-#     driver_path = r'driver/chromedriver-linux64'
-#     # driver_path = r'/driver/chromedriver-linux64/chromedriver'
-# elif system_platform == "Windows":
-#     driver_path = r'driver/chromedriver-win64'
-#     # driver_path = r'/driver/chromedriver-win64/chromedriver.exe'
-# elif system_platform == "Darwin":
-#     driver_path = r'driver/chromedriver-mac-x64'
-#     # driver_path = r'/driver/chromedriver-mac-x64/chromedriver'
-
-
 # 连接数据库
 session = mysql.connectSql()
 
 
-def requestsList():
+def runNeteastMusicSpider():
     getUrl()
     mysql.closeSql(session)
 
@@ -51,7 +39,7 @@ def getUrl():
         for li_item in li_element:
             # 在<p>标签中查找<a>标签
             a_tag = li_item.find('a', class_='s-fc0')
-            print(f"spider: {a_tag.text}")
+            # print(f"spider: {a_tag.text}")
             # 提取榜单名称及url
             data = {'name': a_tag.text, 'url': "https://music.163.com" + a_tag['href']}
             toplist(data['url'], data['name'])
