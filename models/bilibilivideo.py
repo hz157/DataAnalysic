@@ -22,4 +22,5 @@ class BilibiliVideo(Base):
     share = Column(Integer)
     like = Column(Integer)
     dislike = Column(Integer)
+    list_name = Column(String)
     create_at = Column(DateTime, default=func.now())
