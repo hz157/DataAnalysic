@@ -17,8 +17,11 @@ from models.bilibilivideo import BilibiliVideo
 session = mysql.connectSql()
 
 
-def requestsList():
-    getUpInfo()
+def runBilibiliSpider():
+    getRank()
+    getMustSee()
+    getWeekHot()
+    getComHot()
     mysql.closeSql(session)
 
 
@@ -109,9 +112,10 @@ def getComHot():
         response = requests.get(url=url, headers=HttpParams.browser_ua_header)
         json_data = json.loads(response.text)
         total_items = len(json_data['data']['list'])
-        for item in tqdm(json_data['data']['list'], desc=f"Bilibili Comprehensive Popular(number: {page}) Processing", unit="item", total=total_items):
+        for item in tqdm(json_data['data']['list'], desc=f"Bilibili Comprehensive Popular(number: {page}) Processing",
+                         unit="item", total=total_items):
             analysic_json_data(item, "综合热门")
-        time.sleep(random.randint(1, 10))   # 随机延时
+        time.sleep(random.randint(1, 10))  # 随机延时
 
 
 # 入站必刷
@@ -121,7 +125,7 @@ def getMustSee():
     json_data = json.loads(response.text)
 
     total_items = len(json_data['data']['list'])
-    for item in tqdm(json_data['data']['list'], desc="Bilibili Must-Watch for Newcomers Processing", unit="item", total=total_items):
+    for item in tqdm(json_data['data']['list'], desc="Bilibili Must-Watch for Newcomers Processing", unit="item",total=total_items):
         analysic_json_data(item, "入站必刷")
 
 
@@ -129,7 +133,7 @@ def getMustSee():
 def getWeekHot():
     page = 1
     while True:
-        url = f"https://api.bilibili.com/x/web-interface/popular/precious?page_size=100&pn={page}"
+        url = f"https://api.bilibili.com/x/web-interface/popular/series/one?number={page}"
         response = requests.get(url=url, headers=HttpParams.browser_ua_header)
         json_data = json.loads(response.text)
         # 啊B程序员在超过期数会返回啥都木有，可爱捏
@@ -138,8 +142,9 @@ def getWeekHot():
             return
         else:
             total_items = len(json_data['data']['list'])
-            for item in tqdm(json_data['data']['list'], desc=f"Bilibili Weekly Popular(Number: {page}) Processing", unit="item", total=total_items):
-                analysic_json_data(item, "入站必刷")
+            for item in tqdm(json_data['data']['list'], desc=f"Bilibili Weekly Popular(Number: {page}) Processing",
+                             unit="item", total=total_items):
+                analysic_json_data(item, "每周热门")
             page += 1
         time.sleep(random.randint(1, 10))  # 随机延时
 
