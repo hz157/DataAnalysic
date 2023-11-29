@@ -8,6 +8,7 @@ import platform
 from datetime import datetime
 from bs4 import BeautifulSoup
 from sqlalchemy.exc import NoResultFound
+from tqdm import tqdm
 
 from config import HttpParams
 from dependent import mysql
@@ -15,23 +16,11 @@ from models.neteasemusic import NetEaseMusic
 
 system_platform = platform.system()
 
-# # 指定浏览器驱动的路径，例如ChromeDriver的路径
-# if system_platform == "Linux":
-#     driver_path = r'driver/chromedriver-linux64'
-#     # driver_path = r'/driver/chromedriver-linux64/chromedriver'
-# elif system_platform == "Windows":
-#     driver_path = r'driver/chromedriver-win64'
-#     # driver_path = r'/driver/chromedriver-win64/chromedriver.exe'
-# elif system_platform == "Darwin":
-#     driver_path = r'driver/chromedriver-mac-x64'
-#     # driver_path = r'/driver/chromedriver-mac-x64/chromedriver'
-
-
 # 连接数据库
 session = mysql.connectSql()
 
 
-def requestsList():
+def runNeteastMusicSpider():
     getUrl()
     mysql.closeSql(session)
 
@@ -50,6 +39,7 @@ def getUrl():
         for li_item in li_element:
             # 在<p>标签中查找<a>标签
             a_tag = li_item.find('a', class_='s-fc0')
+            # print(f"spider: {a_tag.text}")
             # 提取榜单名称及url
             data = {'name': a_tag.text, 'url': "https://music.163.com" + a_tag['href']}
             toplist(data['url'], data['name'])
@@ -76,12 +66,9 @@ def toplist(base_url, name):
         day = match.group(2)
         # 构建日期字符串
         date = f'{current_year}-{month.zfill(2)}-{day.zfill(2)}'
-    # print(json_data)
-    # for item in json_data:
-    #     print(item)
-    # print(date)
     count = 1
-    for item in json_data:  # 构造数据
+    total_items = len(json_data)
+    for item in tqdm(json_data, desc=f"NeteaseMusic {name} Processing", unit="item", total=total_items):  # 构造数据
         data = NetEaseMusic()
         data.rank = count  # 获取排名
         count += 1
@@ -92,28 +79,24 @@ def toplist(base_url, name):
         data.list_name = name  # 获取榜单名称
         data.date = date  # 日期
         data.create_at = datetime.now()
-        # print(data.rank)
-        # print(data.song)
-        # print(data.singer)
-        # print(data.duration)
-        # print(data.url)
-        # print(data.list_name)
-        # print(data.date)
         # 检查该条目是否已存在于数据库中
         try:
-            existing_data = session.query(NetEaseMusic).filter_by(
-                rank=data.rank,
-                song=data.song,
-                singer=data.singer,
-                duration=data.duration,
-                url=data.url,
-                list_name=data.list_name,
-                date=data.date
-            ).one()
-            # 条目已存在，您可以更新它或跳过添加新条目
+            existing_data = session.query(NetEaseMusic).filter(
+                NetEaseMusic.rank == data.rank,
+                NetEaseMusic.song == data.song,
+                NetEaseMusic.url == data.url,
+                NetEaseMusic.list_name == data.list_name,
+                NetEaseMusic.date == data.date
+            ).first()
+            # 条目不存在，添加新条目
+            if existing_data is None:
+                session.add(data)
+                session.commit()
+
+            # 条目已存在，丢弃更改
             # 例如，您可以更新“create_at”字段并提交更改
-            existing_data.create_at = datetime.now()
-            session.commit()
+            # existing_data.create_at = datetime.now()
+            # session.commit()
         except NoResultFound:
             # 条目不存在，请将其添加到数据库
             session.add(data)
