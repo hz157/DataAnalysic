@@ -1,7 +1,7 @@
 # Spider 
 
 ## Bilibili
-![bilibili_console](git_doc/img/bilibili_console.gif)
+![bilibili_console](https://github.com/hz157/DataAnalysic/blob/36b12a90505efb5a97528cb6cff997e6c52dec01/git_doc/img/bilibili_console.gif)
 ### Accessible Rankings
 - up主信息
   - 粉丝数
