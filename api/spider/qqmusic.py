@@ -5,6 +5,7 @@ import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
 from sqlalchemy.exc import NoResultFound
+from tqdm import tqdm
 
 from config import HttpParams
 from dependent import mysql
@@ -220,7 +221,8 @@ def toplist(base_url, name):
             flag += 1
     if flag == 0:
         date = "第" + str(datetime.strptime(date.split('-')[0], "%m.%d").isocalendar().week) + "周"  # 统一日期格式为 第x周
-    for item in div_elements:  # 构造数据
+    total_items = len(div_elements)
+    for item in tqdm(div_elements, desc=f"QQMusic {name} Processing", unit="item", total=total_items):  # 构造数据
         div_soup = BeautifulSoup(str(item), "html.parser")  # 载入bs4
         data = QQMusic()
         data.rank = div_soup.select("div.songlist__number songlist__number--top, div.songlist__number ")[0].text  # 获取排名
