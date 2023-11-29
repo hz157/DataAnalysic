@@ -8,6 +8,7 @@ import platform
 from datetime import datetime
 from bs4 import BeautifulSoup
 from sqlalchemy.exc import NoResultFound
+from tqdm import tqdm
 
 from config import HttpParams
 from dependent import mysql
@@ -78,7 +79,8 @@ def toplist(base_url, name):
         # 构建日期字符串
         date = f'{current_year}-{month.zfill(2)}-{day.zfill(2)}'
     count = 1
-    for item in json_data:  # 构造数据
+    total_items = len(json_data)
+    for item in tqdm(json_data, desc=f"NeteaseMusic {name} Processing", unit="item", total=total_items):  # 构造数据
         data = NetEaseMusic()
         data.rank = count  # 获取排名
         count += 1
