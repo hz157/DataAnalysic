@@ -1,3 +1,17 @@
+"""
+Module/Script Name: Bilibili spider
+Author: RyanZhang
+Date: 1/12/2023
+
+Description: B站视频爬虫
+ 可爬数据（综合热门视频，入站必刷，每周热门，排行榜，UP主信息）
+
+Dependencies:
+- sqlalchemy
+- requests
+- tqdm
+
+"""
 import datetime
 import json
 import random
@@ -5,7 +19,6 @@ import time
 
 import requests
 
-from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
 from config import HttpParams
