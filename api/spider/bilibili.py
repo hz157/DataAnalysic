@@ -28,13 +28,13 @@ def runBilibiliSpider():
 def getUpInfo(mid):
     relationship_api_url = f"https://api.bilibili.com/x/relation/stat?vmid={mid}"
     upstat_api_url = f"https://api.bilibili.com/x/space/upstat?mid={mid}"
-
+    data = BilibiliUp
     # 查询数据库是否存在相同mid的数据
-    try:
-        existing_data = session.query(BilibiliUp).filter_by(mid=mid).one()
-    except NoResultFound:
-        # 如果数据库中不存在相同mid的数据，则创建一个新实例
-        existing_data = BilibiliUp(mid=mid)
+    # try:
+    #     existing_data = session.query(BilibiliUp).filter_by(mid=mid).one()
+    # except NoResultFound:
+    #     # 如果数据库中不存在相同mid的数据，则创建一个新实例
+    #     existing_data = BilibiliUp(mid=mid)
 
     # 获取粉丝数量，关注量
     response = requests.get(url=relationship_api_url, headers=HttpParams.browser_ua_header)
@@ -42,9 +42,11 @@ def getUpInfo(mid):
     if response.status_code == 200:
         json_data = json.loads(response.text)
         if json_data['data'].get('follower') is not None:
-            existing_data.follower = json_data['data']['follower']
+            # existing_data.follower = json_data['data']['follower']
+            data.follower = json_data['data']['follower']
         if json_data['data'].get('following') is not None:
-            existing_data.following = json_data['data']['following']
+            # existing_data.following = json_data['data']['following']
+            data.following = json_data['data']['following']
 
     # 获取播放量，获赞数量
     response = requests.get(url=upstat_api_url, headers=HttpParams.browser_ua_header)
@@ -52,7 +54,8 @@ def getUpInfo(mid):
     if response.status_code == 200:
         json_data = json.loads(response.text)
         if json_data['data'].get('likes') is not None:
-            existing_data.likes = json_data['data']['likes']
+            # existing_data.likes = json_data['data']['likes']
+            data.likes = json_data['data']['likes']
         # 获取 'archive' 字典
         archive_data = json_data['data'].get('archive')
 
@@ -60,11 +63,13 @@ def getUpInfo(mid):
         if archive_data is not None:
             view = archive_data.get('view')
             if view is not None:
-                existing_data.view = view
+                # existing_data.view = view
+                data.view = view
 
     # 使用事务进行数据库操作
     try:
-        session.add(existing_data)
+        # session.add(existing_data)
+        session.add(data)
         session.commit()
     except Exception as e:
         # 处理异常，可以进行回滚等操作
