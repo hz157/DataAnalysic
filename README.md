@@ -1,11 +1,16 @@
 # Data Analysic and Visualization Design
 
 ## Framework
-- FastAPI
+### Service [FastApi](https://fastapi.tiangolo.com/)
+![FastApi](https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png)
+### Dispaly [Vue3](https://vuejs.org/)
+<img src="https://www.vectorlogo.zone/logos/vuejs/vuejs-ar21.svg" width="900" height="300">
 
 ## Spider Module 
 > Spider module can be independently deployed
 
+Spider independent branch created https://github.com/hz157/DataAnalysic/tree/spider
+<br>
 [Spider README.md](api/spider/README.md)
 ### Support Website
 1. Bilibili
