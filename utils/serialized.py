@@ -17,6 +17,17 @@ from sqlalchemy.orm import DeclarativeMeta
 # 将对象转换成字典形式
 def to_dict(obj):
     return {attr: getattr(obj, attr) for attr in dir(obj)}
+    # Remove attributes starting with '__' (internal attributes) and functions/methods
+    # valid_attributes = [attr for attr in dir(obj) if not callable(getattr(obj, attr)) and not attr.startswith('__')]
+    #
+    # # Create a dictionary with valid attributes
+    # result_dict = {attr: getattr(obj, attr) for attr in valid_attributes}
+    #
+    # # Remove newline characters and replace '\\' with '\'
+    # result_dict = {key: value.replace('\n', '').replace('\\', '\\').replace('\\', '') if isinstance(value, str) else value for
+    #                key, value in result_dict.items()}
+    #
+    # return result_dict
 
 
 # 定义自定义编码器函数
