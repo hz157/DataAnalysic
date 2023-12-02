@@ -14,6 +14,7 @@ Dependencies:
 
 """
 import json
+import math
 
 import pandas as pd
 
@@ -37,17 +38,20 @@ def get_db():
 
 
 @router.get("/video")
-def get_video(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
-    skip = skip * limit
-    data = db.query(BilibiliVideo).offset(skip).limit(limit).all()
+def get_video(page: int = 0, num: int = 100, db: Session = Depends(get_db)):
+    start = page * num
+    if page == 1:
+        start = 0
+    data = db.query(BilibiliVideo).offset(start).limit(num).all()
+    count = db.query(BilibiliVideo).count()
     # 反序列化
     serialized_data = json.dumps(data, default=encode_custom)
     return JSONResponse(content={"code": 0,
                                  "message": "success",
-                                 "page": skip + 1,
-                                 "number": limit,
-                                 "data": json.loads(serialized_data)})
-    # return data
+                                 "page": page if page != 0 else page + 1,  # 当前页数
+                                 "number": num,  # 单页显示数量
+                                 "count": math.ceil(count / num),  # 总页数
+                                 "data": json.loads(serialized_data)})  # 数据
 
 
 @router.get("/hot_pub_location")
@@ -68,4 +72,6 @@ def hot_pub_location(db: Session = Depends(get_db)):
     # Convert NumPy types to standard Python types
     top_locations = top_locations.to_dict()
 
-    return JSONResponse(content={"code": 0, "message": "success", "data": top_locations})
+    return JSONResponse(content={"code": 0,
+                                 "message": "success",
+                                 "data": top_locations})
