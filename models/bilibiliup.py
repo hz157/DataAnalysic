@@ -9,7 +9,7 @@ class BilibiliUp(Base):
     __tablename__ = 'bilibili_up'
 
     id = Column(Integer, primary_key=True)
-    mid = Column(Integer)
+    mid = Column(String)
     view = Column(Integer)
     likes = Column(Integer)
     following = Column(Integer)

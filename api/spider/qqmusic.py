@@ -1,3 +1,17 @@
+"""
+Module/Script Name: QQMusic spider
+Author: RyanZhang
+Date: 1/12/2023
+
+Description: QQ音乐爬虫
+ 可爬数据（官方首页所有榜单）
+
+Dependencies:
+- sqlalchemy
+- requests
+- beautifulsoup4
+- tqdm
+"""
 import random
 import time
 

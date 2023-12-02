@@ -1,9 +1,13 @@
 from fastapi import FastAPI
-from api import data_api
 
+from api.bilibili import router as BilibiliRouter
+from api.qqmusic import router as QQMusicRouter
+from api.neteasemusic import router as NetEaseMusicRouter
 
 app = FastAPI()
-app.include_router(data_api, prefix="/data")
+app.include_router(BilibiliRouter, prefix="/bilibili")
+app.include_router(QQMusicRouter, prefix="/qq_music")
+app.include_router(NetEaseMusicRouter, prefix="/netease_music")
 
 
 @app.get("/")
