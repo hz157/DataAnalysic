@@ -49,4 +49,5 @@ def get_video(page: int = 0, num: int = 100, db: Session = Depends(get_db)):
                                  "page": page if page != 0 else page + 1,  # 当前页数
                                  "number": num,  # 单页显示数量
                                  "count": math.ceil(count / num),  # 总页数
+                                 "sum": count,  # 数据总量
                                  "data": json.loads(serialized_data)})  # 数据
