@@ -135,14 +135,39 @@ def get_up_count(uid: str, db: Session = Depends(get_db)):
     # 过滤掉重复的 bvid
     df = df.drop_duplicates(subset='bvid')
     # 反序列化
-    data = db.query(BilibiliUp).filter(BilibiliUp.mid == uid).order_by(desc(BilibiliUp.update_time)).first()
+    data = db.query(BilibiliUp).filter(BilibiliUp.mid == uid).order_by(desc(BilibiliUp.update_time)).limit(12).all()
     serialized_data = json.dumps(data, default=encode_custom)
     return JSONResponse(content={"code": 0,
                                  "message": "success",
-                                 "data": {
-                                     "up_info": json.loads(serialized_data),
-                                     "count": len(df)}
+                                 "count": len(df),
+                                 "data": json.loads(serialized_data)
                                  })  # 数据
+
+
+@router.get("/up_percent")
+def get_up_percent(type: int=None ,db: Session = Depends(get_db)):
+    # 执行SQL查询
+    query_result = db.query(BilibiliVideo).all()
+    # 将查询结果转换为 Pandas DataFrame
+    df = pd.DataFrame([(item.bvid, item.up, item.up_mid) for item in query_result], columns=['bvid', 'up', 'up_mid'])
+    # 去除重复的 'bvid' 数据，保留最后一个 'up' 信息
+    df_unique = df.sort_values('up').drop_duplicates(subset='bvid', keep='last')
+    # 获取每个 'up_mid' 上榜次数
+    up_mid_counts = df_unique['up_mid'].value_counts()
+    # 获取排行榜前 10 的 'up_mid' 及对应的 'up' 信息
+    top_10_up_mid_info = []
+    for up_mid, count in up_mid_counts.head(10).items():
+        up_info = df_unique[df_unique['up_mid'] == up_mid]['up'].iloc[0]  # 获取 up 信息，这里简单地选择第一个
+        top_10_up_mid_info.append({'count': count, 'up': up_info})
+    sum_counts = 0
+    for item in top_10_up_mid_info:
+        sum_counts += item['count']
+    if type is None:
+        for item in top_10_up_mid_info:
+            item['count'] = round((item['count'] / sum_counts) * 100, 3)
+    return JSONResponse(content={"code": 0,
+                                 "message": "success",
+                                 "data": top_10_up_mid_info})
 
 
 @router.get("/up_info")
