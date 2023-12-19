@@ -100,7 +100,7 @@ def percent(db: Session = Depends(get_db)):
     return JSONResponse(content={"code": 0,
                                  "message": "success",
                                  "data": {
-                                     "qq_music": f"{int(qq_music_data_count / all * 100)}%",
-                                     "netease_music": f"{int(netease_music_data_count / all * 100)}%",
-                                     "bilibili": f"{int(bilibili_up_data_count / all * 100)}%",
+                                     "qq_music": f"{round(qq_music_data_count / all * 100, 3)}",
+                                     "netease_music": f"{round(netease_music_data_count / all * 100, 3)}",
+                                     "bilibili": f"{round(bilibili_up_data_count / all * 100, 3)}",
                                  }})  # 数据
