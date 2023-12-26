@@ -9,7 +9,7 @@ class BilibiliVideo(Base):
     __tablename__ = 'bilibili_video'
 
     id = Column(Integer, primary_key=True)
-    title = Column(Integer)
+    title = Column(String)
     up = Column(String)
     up_mid = Column(String)
     pub_location = Column(String)
