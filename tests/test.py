@@ -1,7 +1,5 @@
-from api.spider import qqmusic
-from api.spider import neteasemusic
+import api.spider
 
 if __name__ == '__main__':
-    neteasemusic.requestsList()
-    qqmusic.requestsList()
-#
+    a = api.spider
+
