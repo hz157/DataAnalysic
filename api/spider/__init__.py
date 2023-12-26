@@ -3,7 +3,7 @@ import threading
 import platform
 import time
 
-from api.spider import bilibili, neteasemusic, qqmusic
+from api.spider import bilibili, neteasemusic, qqmusic, monitor
 
 # 判断执行平台
 if platform.system() == 'Windows':
@@ -29,17 +29,24 @@ def clear_console():
         os.system(clear_command)
         time.sleep(1)
 
+
+def db_monitor():
+    monitor.update_date()
+
+
 def start_threads():
     # 创建并启动线程
     thread_bilibili = threading.Thread(target=run_bilibili)
     thread_neteastmusic = threading.Thread(target=run_neteastmusic)
     thread_qqmusic = threading.Thread(target=run_qqmusic)
+    thread_db_monitor = threading.Thread(target=db_monitor)
     thread_clear = threading.Thread(target=clear_console)
 
     # 启动线程
     thread_bilibili.start()
     thread_neteastmusic.start()
     thread_qqmusic.start()
+    thread_db_monitor.start()
     # thread_clear.start()
 
 
