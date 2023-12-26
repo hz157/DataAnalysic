@@ -15,13 +15,15 @@ Dependencies:
 """
 import json
 import math
+import os
+import uuid
 
 import pandas as pd
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import desc, asc, func, and_
 from sqlalchemy.orm import Session
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, FileResponse
 
 from dependent import mysql
 from models.bilibiliup import BilibiliUp
@@ -144,8 +146,36 @@ def get_up_count(uid: str, db: Session = Depends(get_db)):
                                  })  # 数据
 
 
+@router.get("/download_data")
+def download_data(type: int = None, db: Session = Depends(get_db)):
+    fileName = str(uuid.uuid4()) + ".csv"
+    filePath = os.path.join(os.getcwd(), "tmp_file", fileName)
+    # 执行SQL查询
+    query_result = db.query(BilibiliVideo).all()
+    # 获取列名
+    columns = query_result[0].__table__.columns.keys() if query_result else []
+    if type is None:
+        # 将数据转为 Pandas DataFrame
+        df = pd.DataFrame([{col: getattr(item, col) for col in columns} for item in query_result])
+        # 将 DataFrame 保存为 CSV 文件
+        df.to_csv(filePath, index=False)
+    else:
+        # 将数据转为 Pandas DataFrame
+        df = pd.DataFrame([{col: getattr(item, col) for col in columns} for item in query_result])
+        # 根据 create_at 列进行降序排序
+        df = df.sort_values(by="create_at", ascending=False)
+        # 去除重复的 BVID，保留最新的数据
+        df = df.drop_duplicates(subset="bvid", keep="first")
+        # 将 DataFrame 保存为 CSV 文件
+        df.to_csv(filePath, index=False)
+    # 设置响应头，告诉浏览器文件类型和文件名
+    response = FileResponse(filePath, filename=fileName,
+                            media_type="text/csv")
+    return response
+
+
 @router.get("/up_percent")
-def get_up_percent(type: int=None ,db: Session = Depends(get_db)):
+def get_up_percent(type: int = None, db: Session = Depends(get_db)):
     # 执行SQL查询
     query_result = db.query(BilibiliVideo).all()
     # 将查询结果转换为 Pandas DataFrame
